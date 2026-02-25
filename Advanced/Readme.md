@@ -49,6 +49,61 @@ I have categorized them to help you structure the interview.
 34. **The Slow Report Diagnosis:** "A stakeholder complains that a specific report page is unusable. It has 15 visuals. Walk me through your exact troubleshooting workflow from the moment you open the file to the moment you identify the bottleneck."
 35. **Fabric & OneLake:** "With the introduction of Microsoft Fabric and OneLake, how does your architecture change? Would you move away from traditional Power BI Datasets to Lakehouse models using Direct Lake? What are the pros and cons you foresee for our current environment?"
 
+Here are 35 **unconventional, out-of-the-box, and scenario-heavy** Power BI interview questions. These are designed to test a candidate's intuition, their understanding of the engine's "dark corners," and their ability to navigate conflicting requirements where standard best practices might not apply.
+
+### **Section 1: DAX & Engine "Dark Arts"**
+1.  **The Circular Dependency Ghost:** You receive a circular dependency error, but there are no obvious loops in your relationships or measures. You suspect a Calculation Group is involved. How do you isolate the specific interaction causing the loop without removing the calculation groups?
+2.  **Context Transition Trap:** You have a measure that works perfectly in a table visual but returns incorrect totals when placed in a card visual. You suspect unintended context transition. How do you prove this hypothesis using DAX Studio, and how do you fix the total without breaking the row-level detail?
+3.  **The "Blank" vs. "Zero" Debate:** A stakeholder insists that missing data should show as "0" in visuals but remain "Blank" in underlying calculations to avoid skewing averages. How do you achieve this dual behavior without creating two separate measures for every metric?
+4.  **Dynamic Measure Switching (Pre-Field Parameters):** Before Field Parameters existed, how did you dynamically switch measures in a visual using a slicer? Now that Field Parameters exist, what is a specific limitation they still have that your old custom solution handled better?
+5.  **Calculation Group Precedence:** You have two Calculation Groups (e.g., "Time Intelligence" and "Currency Conversion"). When applied together, the results are mathematically wrong. How do you control the order of evaluation, and what happens if the precedence is locked by the dataset owner?
+6.  **The `ALL` vs. `ALLEXCEPT` Performance Hit:** In a massive model, `ALLEXCEPT` is causing a timeout. Why might `REMOVEFILTERS` combined with specific column filters be more efficient, and how do you rewrite the logic to match the engine's optimization paths?
+7.  **Virtual Relationships on the Fly:** You need to join two tables that cannot be physically related (no common key, different granularities) for a one-off analysis. How do you create a "virtual relationship" using DAX that performs better than a CROSSJOIN?
+8.  **Iterator Materialization:** You have a `SUMX` over a million rows. You know this materializes a table in memory. How do you rewrite this using `SUMMARIZE` or `ADDCOLUMNS` to reduce memory footprint, and when does that strategy backfire?
+9.  **Time Intelligence without a Date Table (Impossible Scenario):** You are connected to a legacy cube that does not allow a Date Dimension to be imported. How do you build YoY growth using only the fact table's date column, and what specific functions will fail?
+10. **The `USERELATIONSHIP` Limitation:** You have 10 role-playing dates. Using `USERELATIONSHIP` in every measure is messy. How do you architect a solution using Calculation Groups to handle all 10 dates dynamically with a single slicer?
+
+### **Section 2: Modeling & Architecture Edge Cases**
+11. **The 1:1 Relationship Pitfall:** Power BI treats 1:1 relationships as 1:Many internally. In what specific scenario does this cause ambiguity or performance issues, and why is it generally recommended to merge the tables instead?
+12. **NULL Keys in Relationships:** Your source data has NULLs in the foreign key column. Power BI treats NULLs as a valid match (joining NULL to NULL). How do you prevent this behavior if your business logic requires NULLs to be excluded from joins?
+13. **Composite Model Consistency:** You have a DirectQuery table joined to an Import table. You notice data discrepancy between the two for the same date. How do you debug the storage mode boundary, and how do you ensure the user knows which data is real-time vs. cached?
+14. **High Cardinality Workaround:** You have a column with 50 million unique values (e.g., Transaction ID) that users need to search. Importing it blows up the model. DirectQuery is too slow. What architectural pattern do you use to enable search without loading the column into VertiPaq?
+15. **The "Chasm Trap" in Modeling:** You have two fact tables that don't join directly but share a dimension. Users create visuals combining both facts, resulting in inflated numbers (fan effect). How do you prevent this via modeling rather than just training users?
+16. **Incremental Refresh & Deletes:** Incremental Refresh handles inserts and updates well. How do you handle hard deletes in the source system so they are reflected in Power BI without doing a full refresh?
+17. **Aggregation Table Mismatch:** Your aggregation table is not being hit by the engine, and queries are going straight to the detailed DirectQuery source. What are three subtle reasons (besides mapping) why the engine ignores the aggregation?
+18. **Dataflows vs. Datamarts vs. Lakehouse:** You need to share cleaned data across 50 workspaces. Dataflows are slow, Datamarts are costly, Lakehouse is new. Based on *refresh frequency* and *consumer type*, how do you choose?
+19. **The "Single Source of Truth" Conflict:** Marketing and Finance define "Revenue" differently. They refuse to agree on a single definition. How do you model this in Power BI without creating two separate datasets?
+20. **Handling Multi-Currency in Import Mode:** You need to convert transactions to USD using daily exchange rates. The rates are in a separate table. How do you handle the relationship granularity (Transaction Date vs. Rate Date) without using DAX lookup functions that slow down refresh?
+
+### **Section 3: Power Query (M) & ETL Hacks**
+21. **Breaking Query Folding Intentionally:** Sometimes you *want* to break query folding. Give me a scenario where breaking folding early in the step sequence improves overall performance or enables a transformation that folding blocks.
+22. **Dynamic Source Switching:** You have Dev, Test, and Prod SQL servers. You want users to select the environment from a slicer *in the report* to switch data sources. Why is this impossible with standard parameters, and what is the workaround using Power Automate or Bookmarks?
+23. **Error Handling in Loops:** You are iterating through a folder of 1,000 Excel files. 50 are corrupt. How do you write the M code to skip the corrupt files, log their names to a separate table, and continue the refresh without failing?
+24. **The `Table.Buffer` Mystery:** When does using `Table.Buffer` in Power Query actually improve performance, and when does it cause memory spikes that crash the gateway? How do you decide?
+25. **Privacy Levels & Firewall:** You are combining data from a SQL Server (Private) and a Web API (Public). You get a Formula.Firewall error. Changing privacy levels fixes it but raises security concerns. What is the secure architectural fix?
+26. **Parsing Complex JSON:** You have a JSON column where the structure changes dynamically (different keys per row). How do you normalize this into a table without hardcoding the column names in Power Query?
+27. **Incremental Refresh in Power Query:** How do you configure the `RangeStart` and `RangeEnd` parameters in Power Query to ensure they work with Incremental Refresh policies in the service, and what common mistake breaks this link?
+28. **Custom Connectors:** Have you ever written a custom M connector? If not, how would you handle authentication for a proprietary internal API that doesn't support OAuth2 natively?
+29. **Binary Data Processing:** You need to extract metadata from PDF files stored in SharePoint. How do you handle the binary conversion in Power Query without timing out on large files?
+30. **M Function Recursion:** You need to traverse a hierarchical manager-employee structure in Power Query (not DAX). How do you implement recursion in M, and what are the stack limit risks?
+
+### **Section 4: Security, Governance & "What If"**
+31. **The "Break Glass" Admin:** You have RLS enabled. A CEO needs to see everything temporarily during an audit. How do you grant this access without creating a new security role or disabling RLS for everyone?
+32. **RLS vs. OLS Conflict:** You have OLS hiding a sensitive column, but a measure uses that column. Does RLS override OLS? What happens when a user tries to drill through to a hidden column?
+33. **Embedding & RLS:** You are embedding a report in a custom app. How do you pass the logged-in user's identity to Power BI to enforce RLS without requiring the user to log in to Power BI separately?
+34. **Tenant Settings Blocker:** You built a report using a new feature (e.g., Direct Lake), but users in a different tenant cannot see it. How do you diagnose if this is a license issue, a tenant setting, or a capacity limitation?
+35. **The "Unsolvable" Requirement:** A stakeholder asks for a feature that Power BI fundamentally cannot do (e.g., "Write back to SQL directly from a visual without Power Apps"). How do you handle this conversation? Do you propose a workaround, or do you tell them "No"? Justify your approach.
+
+### **Interviewer Guide: Evaluating "Out of the Box" Answers**
+
+For these questions, there is often no single "correct" answer. You are looking for **reasoning**.
+
+*   **Look for "It Depends":** A senior professional knows that context matters. If they give a dogmatic answer (e.g., "Always use Import"), be skeptical.
+*   **Look for Trade-off Awareness:** They should acknowledge the cost of their solution (e.g., "This workaround fixes the visual, but it increases model size by 20%").
+*   **Look for Debugging Methodology:** For error-based questions, do they guess, or do they describe a systematic way to isolate the variable (e.g., "I would use DAX Studio to capture the query...")?
+*   **Look for Honesty:** For the "Unsolvable Requirement" question, the best answer is often about managing expectations and proposing alternative value, not trying to hack the tool into doing something it wasn't built for.
+*   **Look for Security Consciousness:** For RLS/Privacy questions, ensure they don't suggest solutions that compromise data security for the sake of convenience.
+*   
 ### **Interviewer Guide: What to look for in their answers**
 
 *   **For 4 Years Experience:** They should not just answer "How." They must answer "Why" and "What if."
