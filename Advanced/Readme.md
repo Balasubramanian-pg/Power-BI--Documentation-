@@ -293,3 +293,63 @@ These questions are designed to have **no single correct answer**. You are evalu
 
 **Red Flag:** If they claim Power BI can do something it fundamentally cannot (e.g., "You can delete rows from VertiPaq without refresh"), they lack deep technical honesty.
 **Green Flag:** If they explain the *trade-off* (e.g., "We can do X, but it increases refresh time by 50%"), they are thinking like an architect.
+
+Here are 35 **fundamentally challenging, unique, and architecturally profound** Power BI interview questions. These are drawn from real-world production war stories, edge-case engine behaviors, and strategic dilemmas that separate senior engineers from architects.
+
+### **Section 1: Engine Internals & VertiPaq Limits**
+1.  **The Dictionary Encoding Cliff:** You have a text column with 1 million unique values. VertiPaq compresses it well. You add one more unique value every day. At what point does the dictionary encoding become a liability rather than an asset, and how do you detect this before the refresh fails?
+2.  **Storage Engine vs. Formula Engine Bottleneck:** Your DAX Studio trace shows 95% of the time is spent in the Storage Engine (SE), but the query is simple. The Source is SQL Server. Is this a Power BI issue or a Source issue? How do you prove where the latency originates without access to the SQL DBA?
+3.  **The "Hidden" Materialization:** You use a variable `VAR _table = FILTER(...)`. You use `_table` twice in the measure. Does VertiPaq materialize the table once or twice in memory? How does this change if the variable is used inside a Calculation Group?
+4.  **Relationship Cardinality Enforcement:** Power BI allows you to set a relationship as "One-to-One." The engine treats it as "One-to-Many." If your data violates the 1:1 assumption (duplicates on both sides), how does the engine resolve the ambiguity during query time, and what data is lost?
+5.  **The Blank Row Propagation:** Every table has a hidden Blank row. If you have a chain of 5 relationships, and the Blank row propagates through all of them, how does this impact the memory footprint of the model compared to a model where relationships are broken?
+6.  **DirectQuery Query Fusion:** You have two DirectQuery sources (SQL and Oracle). You join them in Power BI. Does the engine attempt to fuse the queries into a single distributed transaction, or does it query one and loop through the other? What are the consistency risks?
+7.  **Aggregation Table Match Failure:** You have an Aggregation table. You create a measure that uses a `NONVISUAL` function (e.g., `SELECTEDVALUE` in a card). The engine ignores the aggregation table. Why do non-visual contexts sometimes bypass aggregation rules?
+8.  **Composite Model Consistency:** You have an Import table and a DirectQuery table joined in a Composite Model. You filter the Import table. Does the filter push down to the DirectQuery source immediately, or does it filter the local cache first? What happens if the DirectQuery source is offline?
+9.  **The "Auto-Date" Hidden Cost:** You disable Auto-Date/Time. Your model size drops. But your Time Intelligence measures break. Why do standard DAX time functions rely on hidden date tables, and how do you replicate that functionality without the bloat?
+10. **VertiPaq Scan Speed:** You have two columns: `CustomerID` (Integer) and `CustomerName` (Text). You filter on `CustomerName`. Why is the scan speed significantly slower than filtering on `CustomerID`, even if both are indexed in the source?
+
+### **Section 2: Security, Governance & Scale**
+11. **RLS Role Explosion:** You have 50,000 users. You cannot create 50,000 RLS roles. You use dynamic RLS. The security table has 50,000 rows. Performance degrades. How do you optimize the security table structure (e.g., grouping, hashing) to reduce the filter overhead?
+12. **OLS vs. RLS Precedence:** You hide a column using Object Level Security (OLS). You have a measure that uses that column. You have RLS that allows the user to see the measure. Does OLS block the measure calculation, or does the measure compute and then hide the result?
+13. **The "Break Glass" Audit:** You grant a user "Admin" access to bypass RLS for troubleshooting. How do you log this specific bypass event to ensure compliance, given that Admin actions are not always logged in the standard Audit logs?
+14. **Sensitivity Labels & Encryption:** You apply a Sensitivity Label that encrypts the PBIX file. You embed this report in a SharePoint site. Does the encryption impact the render time for end-users, and how does the key exchange happen during authentication?
+15. **External Sharing Risk:** You share a report with an external user (Guest). They have RLS. You later remove their RLS role but keep them in the Workspace. Can they still see data via cached visuals or exported files? How do you enforce a hard revoke?
+16. **Tenant Level Governance:** You want to block users from creating Dataflows but allow Datasets. You set the Tenant Setting. A user finds a workaround using Power Query in Desktop and publishing. How do you technically prevent this without blocking Desktop usage?
+17. **Deployment Pipeline Data Loss:** You deploy from Test to Prod. The Prod dataset is configured to refresh immediately. The source is down. Does Prod retain the old data, show an error, or become empty? How do you configure "Fail-Safe" deployment?
+18. **Workspace Role vs. App Permission:** You add a user as a "Viewer" in the Workspace. You also add them to the Published App. They report they can't see the report. Which permission model takes precedence, and where is the conflict likely occurring?
+19. **Service Principal RLS:** You use a Service Principal for automated refresh. You have Dynamic RLS. The Service Principal is not a human user. How do you pass the *actual* user's identity to the dataset during refresh so RLS applies correctly?
+20. **Row-Level Security & Aggregates:** You have RLS enabled. You use an Aggregation table. Does the engine enforce RLS on the Aggregation table *before* querying the Detail table, or does it query Detail first to validate security? What is the performance cost?
+
+### **Section 3: Advanced DAX & Calculation Logic**
+21. **Calculation Group Precedence:** You have two Calculation Groups: "Time Intelligence" and "Currency Conversion". You apply both. The result is wrong. How do you control the order of evaluation, and what happens if the precedence is locked by the dataset owner?
+22. **Dynamic Format String Logic:** You need a measure that shows "K" for thousands and "M" for millions dynamically based on the value. How do you implement this without breaking the underlying numeric value used for sorting and totals?
+23. **Context Transition in Calculated Tables:** You use `CALCULATE` inside a Calculated Table definition. Since calculated tables are processed during refresh, what filter context exists at that moment? Is it empty, or does it inherit something from the model?
+24. **`TREATAS` Performance Penalty:** You use `TREATAS` to create a virtual relationship. Performance is 10x slower than a physical relationship. What is the engine doing differently during filter propagation that causes this overhead?
+25. **`SUMMARIZE` vs. `SUMMARIZECOLUMNS`:** Microsoft recommends `SUMMARIZECOLUMNS`. In what specific DAX pattern is `SUMMARIZE` still required or superior in a DirectQuery model?
+26. **Iterator Materialization:** You have a `SUMX` over a million rows. You know this materializes a table in memory. How do you rewrite this using `SUMMARIZE` or `ADDCOLUMNS` to reduce memory footprint, and when does that strategy backfire?
+27. **The "Blank" vs. "Zero" Debate:** A stakeholder insists that missing data should show as "0" in visuals but remain "Blank" in underlying calculations to avoid skewing averages. How do you achieve this dual behavior without creating two separate measures for every metric?
+28. **Time Intelligence without Date Table:** You are connected to a legacy cube that does not allow a Date Dimension to be imported. How do you build YoY growth using only the fact table's date column, and what specific functions will fail?
+29. **`USERELATIONSHIP` Limitation:** You have 10 role-playing dates. Using `USERELATIONSHIP` in every measure is messy. How do you architect a solution using Calculation Groups to handle all 10 dates dynamically with a single slicer?
+30. **Circular Dependency in Calc Groups:** You create a calculation group that references a measure, which implicitly references the calculation group. How does the engine detect this loop, and is there a valid architectural pattern to resolve it without removing the logic?
+
+### **Section 4: Strategic Architecture & "The Hard No"**
+31. **The "Write-Back" Requirement:** A stakeholder demands native write-back capability (editing data in the grid and saving to SQL). Power BI is read-only. Do you propose Power Apps, a custom app, or a third-party visual? Justify the cost and maintenance implication of your choice.
+32. **The "Real-Time" Myth:** A stakeholder wants "Real-Time" data (sub-second latency) for a dashboard with 50 visuals. DirectQuery is too slow. Import is too stale. What architectural compromise do you propose (e.g., Push Dataset, Stream Analytics, Hybrid)?
+33. **The "Excel Replacement" Trap:** Finance wants to replace all Excel models with Power BI. They need complex what-if analysis with unlimited variables. Power BI has limits. How do you manage this expectation without losing the project?
+34. **The "Single Source of Truth" Conflict:** Marketing and Finance refuse to agree on a definition of "Revenue." They refuse to use the same dataset. Do you build two datasets (fragmentation) or one dataset with conflicting measures (confusion)? How do you govern this?
+35. **The "Unsolvable" Performance Issue:** You have optimized everything (model, DAX, source, gateway). It is still slow. What external factors (network latency, DNS, TLS handshake, capacity throttling) do you investigate next, and in what order, when the tool itself isn't the bottleneck?
+
+---
+
+### **Interviewer Guide: Evaluating "Fundamentally Challenging" Answers**
+
+These questions are designed to have **no single correct answer**. You are evaluating the candidate's **reasoning process**.
+
+*   **Look for "It Depends" with Justification:** If they say "Always do X," they fail. If they say "It depends on Y, because of Z," they pass.
+*   **Look for Engine Intuition:** For the "Memory Cliff" or "Auto-Exist" questions, do they understand *why* the engine behaves that way (hash tables, dictionary encoding), or are they just guessing?
+*   **Look for Ethical Awareness:** For security questions (Inference Attacks, GDPR), do they understand that technical possibility doesn't equal compliance safety?
+*   **Look for Humility:** For the "Unsolvable Performance Issue," the best answer is often "I would engage Microsoft Support" or "I would reconsider the business requirement," rather than "I would tweak the DAX more."
+*   **Look for Future-Proofing:** For the "End of Life" question, are they thinking about abstraction layers and decoupling logic from specific features?
+
+**Red Flag:** If they claim Power BI can do something it fundamentally cannot (e.g., "You can delete rows from VertiPaq without refresh"), they lack deep technical honesty.
+**Green Flag:** If they explain the *trade-off* (e.g., "We can do X, but it increases refresh time by 50%"), they are thinking like an architect.
