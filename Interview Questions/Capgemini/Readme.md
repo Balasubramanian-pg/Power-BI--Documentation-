@@ -128,7 +128,6 @@ in
 
 These solutions demonstrate deep technical expertise while providing practical, implementable patterns that interviewers value.
 
----
 
 ### 10. Can we use `USERNAME()` and `USERPRINCIPALNAME()` in static RLS?
 
@@ -150,7 +149,6 @@ Here’s the difference between the two functions and how they are used in Dynam
 
 **In summary:** `USERNAME()` and `USERPRINCIPALNAME()` are used for **Dynamic RLS**, not Static RLS. The best practice for secure, scalable RLS in the Power BI Service is to use `USERPRINCIPALNAME()`.
 
----
 
 ### 11. Does Power BI maintain/store historical data and how?
 
@@ -166,7 +164,6 @@ However, there are two primary ways to _achieve_ historical data storage _with_ 
     - When published to the Service, the first refresh loads all the historical data. Subsequent refreshes will only fetch and update the recent data (the last 10 days), while leaving the older, archived data untouched.
     - This effectively allows Power BI to **accumulate data over time** and build its own historical repository, but it must be explicitly configured.
 
----
 
 ### 12. Is it possible to create drill-down and drill-up on 3 fact tables?
 
@@ -187,7 +184,6 @@ And you have two conformed dimension tables: `DimDate` and `DimProduct`.
 
 For a more explicit navigation, you could also use Power BI's **Drillthrough** feature to navigate from a summary page to a detailed page focusing on one of the fact tables, carrying the filter context (e.g., the selected product) with you.
 
----
 
 ### 13. If there are constraints applied on a table, does the Primary Key and Foreign Key affect in Power BI?
 
@@ -201,7 +197,6 @@ Here's the detailed breakdown:
 - **After Data Import:** Once the data is loaded into the Power BI model, the database constraints become irrelevant. Power BI relies entirely on the relationships you have defined _within the Power BI model_. You could have a relationship in Power BI where no FK constraint exists in the source, or vice-versa. The integrity and filtering behavior are governed solely by the Power BI relationships (their cardinality and cross-filter direction).
 - **In DirectQuery Mode:** The story is slightly different. While Power BI still manages the relationships, the queries it sends back to the source database will perform better if the join columns (PKs and FKs) are properly indexed in the database. So, in this case, the constraints _indirectly_ affect performance but do not dictate the relationship logic within Power BI itself.
 
----
 
 ### 14. If we are taking data from a DB where a table has 6k rows, and then the table gets truncated and now has only 1k rows, will Power BI still have all the 6k rows from the table after a refresh?
 
@@ -217,7 +212,6 @@ Therefore, the Power BI dataset becomes a snapshot of the source at the time of 
 
 The only way to keep the old 6k rows would be if you had previously configured **Incremental Refresh** to archive old data.
 
----
 
 ### 15. How will you identify the type of license by looking at a workspace?
 
@@ -226,7 +220,6 @@ You can identify the capacity type of a workspace (which is tied to licensing) b
 - **Premium Capacity:** The workspace will have a **diamond icon** next to its name. This indicates the workspace is hosted on a Premium capacity, which could be either Premium Per User (PPU) or a dedicated Premium SKU (P1, P2, etc.).
 - **Pro / Shared Capacity:** If there is **no diamond icon**, the workspace is a standard workspace residing on shared capacity. To publish content to it, you need a Pro license, and to view content, users also need a Pro license (unless it is backed by Premium capacity).
 
----
 
 ### 16. What is the size of a workspace?
 
@@ -243,7 +236,6 @@ This question can be interpreted in two ways: "What are the size _limits_?" or "
 - **For Workspace Admins:** Within the workspace settings, you can see some storage information, especially if it's a Premium workspace.
 - **For a Single Dataset:** The easiest way to check the size of a specific dataset is to use a third-party tool like **DAX Studio**. When you connect it to your Power BI Desktop file or a dataset in the Service, it will show you the precise memory consumption of the model.
 
----
 
 ### 18. What is unit testing in Power BI?
 
@@ -256,7 +248,6 @@ The "units" in a Power BI report include:
 - **Relationships:** Is the relationship between two tables configured correctly (cardinality, direction) to produce the right filtering behavior?
 - **Individual Visuals:** Does a visual display data correctly? Does its cross-filtering or highlighting behavior work as expected?
 
----
 
 ### 19. Do you do report validation? How do you do that?
 
@@ -283,7 +274,6 @@ Here are the methods I use for cross-verification:
 4. **Manual Data Export and Pivot:** For smaller datasets or when I don't have DB access, I might export a slice of the raw data into Excel, create a pivot table, and compare the result to my Power BI visual.
 5. **Peer Review:** I ask another developer to review my DAX logic and Power Query transformations. A fresh pair of eyes can often spot logic errors that I might have missed.
 
----
 
 ### 21. Did you do any automation?
 
@@ -297,7 +287,6 @@ Yes, automation is key to creating efficient and reliable BI solutions. I have i
 3. **Development and Deployment Automation:** In more mature environments, I've worked with **PowerShell scripts and the Power BI REST APIs** to automate administrative tasks like deploying reports across workspaces (CI/CD), documenting datasets, or managing user access.
 4. **Template Automation:** Creating Power BI Template files (`.pbit`) to standardize report creation. This automates the process of building new reports with a consistent data model, theme, and base calculations.
 
----
 
 ### 22. What is dual mode?
 
