@@ -279,7 +279,6 @@ Here are 35 **additional** deeply twisted, nuanced, and architecturally complex 
 34. **XMLA Endpoint Write-Back:** You enable XMLA Endpoint Read/Write. You use Tabular Editor to deploy a partition. The Power BI Service shows the dataset as "Failed to Refresh" because the service doesn't know the partition changed. How do you sync the state?
 35. **The "No Power BI" Decision:** You are asked to build a operational dashboard requiring row-level write-back, complex transactional locking, and sub-second latency. You say "No". What specific alternative architecture (e.g., Power Apps + SQL, Custom App) do you propose, and how do you justify the cost increase to the stakeholder?
 
----
 
 ### **Interviewer Guide: Decoding the "Twisted" Answers**
 
@@ -339,7 +338,6 @@ Here are 35 **fundamentally challenging, unique, and architecturally profound** 
 34. **The "Single Source of Truth" Conflict:** Marketing and Finance refuse to agree on a definition of "Revenue." They refuse to use the same dataset. Do you build two datasets (fragmentation) or one dataset with conflicting measures (confusion)? How do you govern this?
 35. **The "Unsolvable" Performance Issue:** You have optimized everything (model, DAX, source, gateway). It is still slow. What external factors (network latency, DNS, TLS handshake, capacity throttling) do you investigate next, and in what order, when the tool itself isn't the bottleneck?
 
----
 
 ### **Interviewer Guide: Evaluating "Fundamentally Challenging" Answers**
 
