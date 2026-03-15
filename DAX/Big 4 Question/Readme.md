@@ -18,7 +18,6 @@
    ```  
    *Common in FP&A scenarios. Be ready to explain absolute vs. relative variance.*
 
----
 
 ### **Time Intelligence (Key for Big 4)**
 4. **Year-over-Year (YoY) Growth**  
@@ -44,7 +43,6 @@
    ```  
    *Critical for balance sheet reporting (semi-additive measures).*
 
----
 
 ### **Customer & Product Analysis**
 7. **Customer Lifetime Value (CLV)**  
@@ -76,7 +74,6 @@
    ```  
    *Key for CRM/recurring revenue models.*
 
----
 
 ### **Data Validation & QA**
 10. **Data Completeness Check**  
@@ -100,7 +97,6 @@
     ```  
     *Simplified logic for spotting anomalies (adjust thresholds as needed).*
 
----
 
 ### **Dynamic Reporting**
 12. **Dynamic Currency Conversion**  
@@ -126,7 +122,6 @@
     ```  
     *Shows UX/design thinking for dashboards.*
 
----
 
 ### **Advanced Filtering**
 14. **YTD for Prior Year (Comparative Analysis)**  
@@ -149,7 +144,6 @@
    ```  
    *Common in operations/financial reporting.*
 
----
 
 ### **Ranking & Segmentation**
 16. **ABC Analysis (Pareto)**  
@@ -181,7 +175,6 @@
    ```  
    *Useful for benchmarking (e.g., median performance).*
 
----
 
 ### **Optimization & Best Practices**
 18. **Measure Totals Row Fix**  
@@ -205,14 +198,12 @@
    ```  
    *Big 4 emphasizes error-proof models.*
 
----
 
 ### **Bonus: Behavioral Tie-In**
 20. **Explain a DAX Measure You Built**  
     *Example Answer:*  
     "In a retail project, I created a **dynamic YoY growth measure** using `SAMEPERIODLASTYEAR` and `CALCULATE` to compare sales across flexible time windows. I added error handling with `DIVIDE` to avoid blank visuals. This helped stakeholders identify seasonal trends."
 
----
 
 ### **Big 4 Interview Tips**
 1. **Focus on Business Context**: Always tie DAX logic to business outcomes (e.g., “This measure tracks client retention for SaaS revenue recognition”).
